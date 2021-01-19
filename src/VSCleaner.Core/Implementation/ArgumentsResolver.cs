@@ -8,15 +8,15 @@ namespace VSCleaner.Core.Implementation
     
     public class ArgumentsResolver : IArgumentsResolver
     {
-        public IEnumerable<Func<Task>> ResolveParameters(IDictionary<string, string> parametersDictionary)
+        public IEnumerable<Action> ResolveParameters(IDictionary<string, string> parametersDictionary)
         {
-            foreach (var (k v) in parametersDictionary)
+            foreach (var (k, v) in parametersDictionary)
             {
                 switch (k)
                 {
                     case ArgumentsConstants.Path:
                     {
-                        yield return () => Task.CompletedTask; 
+                        yield return () => {}; 
                         break;
                     }
                     default:
