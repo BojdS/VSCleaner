@@ -5,6 +5,6 @@ namespace VSCleaner.Core.Contracts
 {
     public interface IArgumentsResolver
     {
-        IEnumerable<Action> ResolveParameters(IDictionary<string, string> parametersDictionary);
+        List<Func<IEnumerable<string>>> ProcessArguments(IDictionary<string, string> argumentsDictionary);
     }
 }

@@ -3,65 +3,63 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using VSCleaner.Core.Contracts;
+using static VSCleaner.Core.Constants.VsCleanerConstants;
 
 namespace VSCleaner.Core.Implementation
 {
     public class DirectoryCleaner : IDirectoryCleaner
     {
-        private readonly DirectoryInfo directoryInfo;
-        private const string BinDirectoryName = "bin";
-        private const string ObjDirectoryName = "obj";
+        private DirectoryInfo DirectoryInfo { set; get; }
+        public IEnumerable<string> CleanDirectory(string path)
+        {
+            if (!Directory.Exists(path))
+                throw new ArgumentException(ValidationConstants.DirectoryNotExistsError.Replace(KeysConstants.ReplaceKey, path));
 
-        public DirectoryCleaner(string directoryPath)
-        {
-            if (!Directory.Exists(directoryPath))
-                throw new ArgumentException($"Directory: {directoryPath} not exists");
-            
-            directoryInfo = new DirectoryInfo(directoryPath);
-        }
-        
-        public IEnumerable<string> CleanDirectory()
-        {
+            DirectoryInfo = new DirectoryInfo(path);
             if(!IsDirectoryCSharpProjectRelated())
+                
                 throw new ArgumentException(
-                    $"Directory: {directoryInfo.FullName} not related to C# project or solution. It should contain sln or csproj file");
+                    ValidationConstants.NotRelatedToProjectDirectoryError.Replace(KeysConstants.ReplaceKey, DirectoryInfo.FullName));
 
-            var directoriesForDelete = GetDeleteSubdirectories(directoryInfo, new List<string>());
+            var directoriesForDelete = new List<string>();
+            SetDeleteSubdirectoriesList(DirectoryInfo, directoriesForDelete);
 
-            directoriesForDelete.ForEach(Directory.Delete);
+            foreach (var directory in directoriesForDelete)
+            {
+                Directory.Delete(directory, true);
+            }
             
             return directoriesForDelete;
         }
         private bool IsDirectoryCSharpProjectRelated()
         {
-            return directoryInfo
+            return DirectoryInfo
                 .GetFiles()
                 .Any(f =>
                 {
                     var extension = f.Name.Split('.').Last().ToLower();
-                    return extension == "csproj" || extension == "sln";
+                    return extension == KeysConstants.CsFileExtension || extension == KeysConstants.SlnFileExtension;
                 });
         }
         
         private static bool IsDirectoryDeleteAble(string name) => 
-            name == ObjDirectoryName 
-            || name == BinDirectoryName;
+            name == KeysConstants.BinFolder 
+            || name == KeysConstants.ObjFolder;
         
-        private static List<string> GetDeleteSubdirectories(DirectoryInfo dirInfo, List<string> directoriesToDelete)
+        private static void SetDeleteSubdirectoriesList(DirectoryInfo dirInfo, List<string> directoriesToDelete)
         {
             var subdirectories = dirInfo.GetDirectories();
-            var toDelete = subdirectories.Where(d => IsDirectoryDeleteAble(d.Name)).Select(d => d.FullName);
+            var toDelete = subdirectories
+                .Where(d => IsDirectoryDeleteAble(d.Name))
+                .Select(d => d.FullName);
             directoriesToDelete.AddRange(toDelete);
             
-            foreach (var info in subdirectories)
+            var notForDelete = subdirectories.Where(d => !IsDirectoryDeleteAble(d.Name));
+            
+            foreach (var info in notForDelete)
             {
-                if(IsDirectoryDeleteAble(info.Name))
-                    continue;
-                
-                directoriesToDelete.AddRange(GetDeleteSubdirectories(info, directoriesToDelete));
+                SetDeleteSubdirectoriesList(info, directoriesToDelete);
             }
-
-            return directoriesToDelete;
         }
     }
 }

@@ -1,30 +1,43 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using VSCleaner.Core.Contracts;
 using static VSCleaner.Core.Constants.VsCleanerConstants;
+
 namespace VSCleaner.Core.Implementation
 {
-    
     public class ArgumentsResolver : IArgumentsResolver
     {
-        public IEnumerable<Action> ResolveParameters(IDictionary<string, string> parametersDictionary)
+        private readonly IDirectoryCleaner directoryCleaner;
+        
+        public ArgumentsResolver (IDirectoryCleaner directoryCleaner)
         {
-            foreach (var (k, v) in parametersDictionary)
+            this.directoryCleaner = directoryCleaner;
+        }
+        
+        public List<Func<IEnumerable<string>>> ProcessArguments(IDictionary<string, string> argumentsDictionary)
+        {
+            if (argumentsDictionary.Count == 0)
             {
-                switch (k)
+                throw new ArgumentException(ValidationConstants.ArgumentsEmptyError);
+            }
+                
+            var result = new List<Func<IEnumerable<string>>>();
+            
+            foreach (var (key, value) in argumentsDictionary)
+            {
+                switch (key)
                 {
                     case ArgumentsConstants.Path:
                     {
-                        yield return () => {}; 
+                        result.Add(() => directoryCleaner.CleanDirectory(value));
                         break;
                     }
                     default:
-                    {
-                        throw new ArgumentException();
-                    }
+                        throw new ArgumentException($"Invalid key: {key}");
                 }
             }
+
+            return result;
         }
     }
 }

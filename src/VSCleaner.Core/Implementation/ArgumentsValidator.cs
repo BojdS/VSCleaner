@@ -13,19 +13,19 @@ namespace VSCleaner.Core.Implementation
         {
             if (arguments.Count == 0)
             {
-                ErrorMessage = ValidatorConstants.ArgumentsEmptyError;
+                ErrorMessage = ValidationConstants.ArgumentsEmptyError;
                 return false;
             }
 
             if (arguments.Count % 2 != 0)
             {
-                ErrorMessage = ValidatorConstants.ArgumentsWithoutValueError;
+                ErrorMessage = ValidationConstants.ArgumentsWithoutValueError;
                 return false;
             }
             
             if (!arguments.Contains(ArgumentsConstants.Path))
             {
-                ErrorMessage = ValidatorConstants.PathAbsentError;
+                ErrorMessage = ValidationConstants.PathAbsentError;
                 return false;
             }
             
@@ -35,7 +35,7 @@ namespace VSCleaner.Core.Implementation
 
             if (argumentKeys.Any(x => !x.StartsWith("-")))
             {
-                ErrorMessage = ValidatorConstants.ArgumentPrefixError;
+                ErrorMessage = ValidationConstants.ArgumentPrefixError;
                 return false;
             }
             
@@ -45,7 +45,7 @@ namespace VSCleaner.Core.Implementation
                     .GroupBy(x => x)
                     .Where(x => x.Count() > 1)
                     .Select(x => x.Key)
-                    .Aggregate("Arguments contains duplicated values: ", (x, y) => $"{x}, {y}");
+                    .Aggregate(ValidationConstants.ArgumentsDuplicatedError, (x, y) => $"{x}, {y}");
                     
                 return false;
             }

@@ -1,15 +1,26 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Linq;
+using VSCleaner.Core.Implementation;
 
 namespace VSCleaner.ConsoleApp
 {
     internal static class Program
     {
-        private static async Task<int> Main(string[] args)
+        private static int Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            
-            return 0;
+            var workflowHandler = WorkFlowHandler.GetInstance();
+            try
+            {
+                workflowHandler.Handle(args).ToList().ForEach(Console.WriteLine);
+                return 0;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine("----------");
+                Console.WriteLine($"Stack: {e.StackTrace}");
+                return 1;
+            }
         }
     }
 }

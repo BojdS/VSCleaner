@@ -4,6 +4,6 @@ namespace VSCleaner.Core.Contracts
 {
     public interface IDirectoryCleaner
     {
-        IEnumerable<string> CleanDirectory();
+        IEnumerable<string> CleanDirectory(string path);
     }
 }

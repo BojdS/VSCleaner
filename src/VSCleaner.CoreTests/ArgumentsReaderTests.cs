@@ -10,36 +10,46 @@ namespace VSCleaner.CoreTests
 {
     public class ArgumentsReaderTests
     {
-        private readonly Mock<IArgumentsValidator> argumentValidatorMock = new ();
+        private readonly Mock<IArgumentsValidator> argumentValidatorMock = new();
         private readonly IArgumentsReader argumentsReader;
 
         public ArgumentsReaderTests()
         {
             argumentsReader = new ArgumentsReader(argumentValidatorMock.Object);
         }
-        
+
+        [Fact]
+        public void ValidationFail_ShouldThrowException()
+        {
+            // Arrange
+            var arguments = Array.Empty<string>();
+            argumentValidatorMock
+                .Setup(x => x.ValidateArguments(arguments))
+                .Returns(() => false);
+
+            // Act
+            // Assert
+            Assert.Throws<ArgumentException>(() => argumentsReader.ReadArgumentsToDictionary(arguments));
+        }
+
         [Theory]
         [MemberData(nameof(ArgumentsData))]
-        public void ArgumentResolver_ShouldReturnArgumentsAndValuesDictionary(Dictionary<string, string> expected, params string[] arguments)
+        public void ArgumentRedader_ShouldReturnArgumentsAndValuesDictionary(
+            Dictionary<string, string> expected,
+            params string[] arguments)
         {
             // Arrange
             argumentValidatorMock
                 .Setup(x => x.ValidateArguments(arguments))
                 .Returns(() => true);
-            
-            // Act
-            try
-            {
-                var result = argumentsReader.ReadArgumentsToDictionary(arguments);
 
-                // Assert
-                Assert.True(expected.Count == result.Count);
-                Assert.True(expected.SequenceEqual(result));
-            }
-            catch (Exception ex)
-            {
-                Assert.IsType<ArgumentException>(ex);
-            }
+            // Act
+
+            var result = argumentsReader.ReadArgumentsToDictionary(arguments);
+
+            // Assert
+            Assert.True(expected.Count == result.Count);
+            Assert.True(expected.SequenceEqual(result));
         }
 
         public static IEnumerable<object[]> ArgumentsData()
@@ -48,22 +58,17 @@ namespace VSCleaner.CoreTests
             {
                 new Dictionary<string, string> {{"-p", "Test Path"}}, new[] {"-p", "Test Path"}
             };
-            
+
             yield return new object[]
             {
                 new Dictionary<string, string> {{"-testKey", "test.Val"}, {"-p", "Path"}},
                 new[] {"-testKey", "test.Val", "-p", "Path"}
             };
-            
+
             yield return new object[]
             {
-                new Dictionary<string, string> {{"-p", "pathTest2"}}, 
+                new Dictionary<string, string> {{"-p", "pathTest2"}},
                 new[] {"-p", "pathTest2"}
-            };
-            yield return new object[]
-            {
-                new Dictionary<string, string> (), 
-                Array.Empty<string>()
             };
         }
     }
