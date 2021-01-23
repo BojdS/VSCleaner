@@ -38,7 +38,7 @@ namespace VSCleaner.CoreTests
             Assert.IsAssignableFrom<IEnumerable<Func<IEnumerable<string>>>>(result);
             Assert.True(result.Any());
             Assert.NotNull(cleanerDelegate);
-            Assert.Empty(cleanerDelegate());
+            Assert.NotEmpty(cleanerDelegate());
         }
 
         [Fact]

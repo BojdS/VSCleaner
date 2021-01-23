@@ -26,5 +26,9 @@ namespace VSCleaner.Core.Constants
             public const string CsFileExtension = "csproj";
             public const string SlnFileExtension = "sln";
         }
+        public static class  MessageConstants
+        {
+            public const string DirectoriesDeletedMessage = "#replaceKey# directories was deleted.";
+        }
     }
 }

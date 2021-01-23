@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using VSCleaner.Core.Contracts;
+using VSCleaner.Core.Extensions;
 using static VSCleaner.Core.Constants.VsCleanerConstants;
 
 namespace VSCleaner.Core.Implementation
@@ -29,7 +31,18 @@ namespace VSCleaner.Core.Implementation
                 {
                     case ArgumentsConstants.Path:
                     {
-                        result.Add(() => directoryCleaner.CleanDirectory(value));
+                        result.Add(() =>
+                        {
+                            var deleteMessages = directoryCleaner
+                                .CleanDirectory(value)
+                                .ToArray();
+
+                            return MessageConstants
+                                .DirectoriesDeletedMessage
+                                .Replace(KeysConstants.ReplaceKey, deleteMessages.Length.ToString())
+                                .ToEnumerableOfOne()
+                                .Concat(deleteMessages);
+                        });
                         break;
                     }
                     default:
